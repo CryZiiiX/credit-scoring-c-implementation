@@ -1,0 +1,25 @@
+# Build artifacts (commenté pour inclure dans le repo)
+# build/*.o
+# build/*/*.o
+# build/credit_risk_predictor
+
+# Data files (commenté pour inclure dans le repo)
+# data/raw/*.csv
+# data/processed/*.csv
+# data/processed/*.txt
+# data/stats/*.txt
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db

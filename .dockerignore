@@ -1,0 +1,22 @@
+# Ignorer les fichiers de build locaux
+build/
+*.o
+*.bin
+
+# Ignorer les résultats locaux
+results/
+models/*.bin
+
+# Ignorer les environnements virtuels Python
+venv/
+__pycache__/
+*.pyc
+
+# Ignorer les fichiers de configuration IDE
+.vscode/
+.idea/
+
+# Ignorer Git
+.git/
+.gitignore
+
