@@ -1,6 +1,20 @@
-/**
- * Tests unitaires pour le prétraitement des données
- */
+/*****************************************************************************************************
+
+Nom : tests/test_preprocessing.c
+
+Rôle : Tests unitaires pour le module preprocessing
+
+Auteur : Maxime BRONNY
+
+Version : V1
+
+Licence : Réalisé dans le cadre du cours Technique d'intelligence artificiel M1 INFORMATIQUE BIG-DATA
+
+Usage : Pour compiler : make
+        Pour executer : ./test_preprocessing
+
+******************************************************************************************************/
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>

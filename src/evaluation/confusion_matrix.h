@@ -1,3 +1,20 @@
+/*****************************************************************************************************
+
+Nom : src/evaluation/confusion_matrix.h
+
+Rôle : Déclarations de fonctions, structures et constantes pour le module de matrice de confusion
+
+Auteur : Maxime BRONNY
+
+Version : V1
+
+Licence : Réalisé dans le cadre du cours Technique d'intelligence artificiel M1 INFORMATIQUE BIG-DATA
+
+Usage : Pour compiler : make
+        Pour executer : ./build/credit_risk_predictor
+
+******************************************************************************************************/
+
 #ifndef CONFUSION_MATRIX_H
 #define CONFUSION_MATRIX_H
 

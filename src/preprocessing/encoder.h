@@ -1,3 +1,20 @@
+/*****************************************************************************************************
+
+Nom : src/preprocessing/encoder.h
+
+Rôle : Déclarations de fonctions, structures et constantes pour le module d'encodage catégoriel
+
+Auteur : Maxime BRONNY
+
+Version : V1
+
+Licence : Réalisé dans le cadre du cours Technique d'intelligence artificiel M1 INFORMATIQUE BIG-DATA
+
+Usage : Pour compiler : make
+        Pour executer : ./build/credit_risk_predictor
+
+******************************************************************************************************/
+
 #ifndef ENCODER_H
 #define ENCODER_H
 

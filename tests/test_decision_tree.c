@@ -1,3 +1,20 @@
+/*****************************************************************************************************
+
+Nom : tests/test_decision_tree.c
+
+Rôle : Tests unitaires pour le module decision_tree
+
+Auteur : Maxime BRONNY
+
+Version : V1
+
+Licence : Réalisé dans le cadre du cours Technique d'intelligence artificiel M1 INFORMATIQUE BIG-DATA
+
+Usage : Pour compiler : make
+        Pour executer : ./test_decision_tree
+
+******************************************************************************************************/
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>

@@ -1,3 +1,20 @@
+/*****************************************************************************************************
+
+Nom : src/utils/csv_parser.c
+
+Rôle : Parsing de fichiers CSV avec gestion des types et encodage intégré
+
+Auteur : Maxime BRONNY
+
+Version : V1
+
+Licence : Réalisé dans le cadre du cours Technique d'intelligence artificiel M1 INFORMATIQUE BIG-DATA
+
+Usage : Pour compiler : make
+        Pour executer : N/A
+
+******************************************************************************************************/
+
 #include "csv_parser.h"
 #include "memory_manager.h"
 #include "utils.h"
@@ -5,6 +22,16 @@
 #include <string.h>
 #include <stdlib.h>
 
+/* **************************************************
+ * # --- PARSING CSV --- #
+ * ************************************************** */
+
+/**
+ * Fonction : parse_csv_line
+ * Rôle     : Parse une ligne CSV en tokens séparés par des virgules
+ * Param    : line (ligne CSV à parser), count (pointeur pour stocker le nombre de tokens)
+ * Retour   : char** (tableau de chaînes de caractères représentant les tokens)
+ */
 char** parse_csv_line(char* line, int* count) {
     int capacity = 10;
     char** tokens = (char**)safe_malloc(capacity * sizeof(char*));
@@ -34,6 +61,12 @@ char** parse_csv_line(char* line, int* count) {
     return tokens;
 }
 
+/**
+ * Fonction : free_parsed_line
+ * Rôle     : Libère la mémoire allouée pour une ligne CSV parsée
+ * Param    : tokens (tableau de tokens à libérer), count (nombre de tokens)
+ * Retour   : void
+ */
 void free_parsed_line(char** tokens, int count) {
     for (int i = 0; i < count; i++) {
         free(tokens[i]);
@@ -41,6 +74,16 @@ void free_parsed_line(char** tokens, int count) {
     free(tokens);
 }
 
+/* **************************************************
+ * # --- CHARGEMENT DATASET --- #
+ * ************************************************** */
+
+/**
+ * Fonction : load_csv
+ * Rôle     : Charge un dataset depuis un fichier CSV avec encodage catégoriel intégré
+ * Param    : filename (nom du fichier CSV), has_header (1 si en-tête présent), label_col (index de la colonne label)
+ * Retour   : Dataset* (structure Dataset contenant les données et labels)
+ */
 Dataset* load_csv(const char* filename, int has_header, int label_col) {
     FILE* file = fopen(filename, "r");
     if (!file) {
@@ -121,6 +164,12 @@ Dataset* load_csv(const char* filename, int has_header, int label_col) {
     return dataset;
 }
 
+/**
+ * Fonction : free_dataset
+ * Rôle     : Libère complètement la mémoire allouée pour un dataset
+ * Param    : dataset (structure Dataset à libérer)
+ * Retour   : void
+ */
 void free_dataset(Dataset* dataset) {
     if (dataset) {
         free_matrix(dataset->data, dataset->rows);

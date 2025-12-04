@@ -1,3 +1,20 @@
+/*****************************************************************************************************
+
+Nom : src/models/decision_tree.c
+
+Rôle : Implémentation from scratch de l'arbre de décision CART (construction, prédiction, sauvegarde)
+
+Auteur : Maxime BRONNY
+
+Version : V1
+
+Licence : Réalisé dans le cadre du cours Technique d'intelligence artificiel M1 INFORMATIQUE BIG-DATA
+
+Usage : Pour compiler : make
+        Pour executer : N/A
+
+******************************************************************************************************/
+
 #include "decision_tree.h"
 #include "../utils/memory_manager.h"
 #include <stdio.h>
@@ -11,6 +28,16 @@ typedef struct {
     double gain;
 } BestSplit;
 
+/* **************************************************
+ * # --- CALCUL D'IMPURETÉ (GINI/ENTROPY) --- #
+ * ************************************************** */
+
+/**
+ * Fonction : compute_gini
+ * Rôle     : Calcule l'impureté de Gini pour un ensemble de labels
+ * Param    : labels (tableau de labels), n_samples (nombre d'échantillons)
+ * Retour   : double (valeur d'impureté de Gini entre 0 et 1)
+ */
 static double compute_gini(int* labels, int n_samples) {
     if (n_samples == 0) return 0.0;
     
@@ -28,6 +55,12 @@ static double compute_gini(int* labels, int n_samples) {
     return 1.0 - (p0 * p0 + p1 * p1);
 }
 
+/**
+ * Fonction : compute_entropy
+ * Rôle     : Calcule l'entropie pour un ensemble de labels
+ * Param    : labels (tableau de labels), n_samples (nombre d'échantillons)
+ * Retour   : double (valeur d'entropie en bits)
+ */
 static double compute_entropy(int* labels, int n_samples) {
     if (n_samples == 0) return 0.0;
     
@@ -49,6 +82,12 @@ static double compute_entropy(int* labels, int n_samples) {
     return entropy;
 }
 
+/**
+ * Fonction : compute_impurity
+ * Rôle     : Calcule l'impureté selon le critère spécifié (Gini ou Entropy)
+ * Param    : labels (tableau de labels), n_samples (nombre d'échantillons), criterion (critère de division)
+ * Retour   : double (valeur d'impureté)
+ */
 static double compute_impurity(int* labels, int n_samples, SplitCriterion criterion) {
     if (criterion == GINI) {
         return compute_gini(labels, n_samples);
@@ -57,6 +96,12 @@ static double compute_impurity(int* labels, int n_samples, SplitCriterion criter
     }
 }
 
+/**
+ * Fonction : majority_class
+ * Rôle     : Détermine la classe majoritaire dans un ensemble de labels
+ * Param    : labels (tableau de labels), n_samples (nombre d'échantillons)
+ * Retour   : int (classe majoritaire, 0 ou 1)
+ */
 static int majority_class(int* labels, int n_samples) {
     int count_0 = 0;
     int count_1 = 0;
@@ -69,6 +114,12 @@ static int majority_class(int* labels, int n_samples) {
     return (count_1 >= count_0) ? 1 : 0;
 }
 
+/**
+ * Fonction : class_probability
+ * Rôle     : Calcule la probabilité de la classe positive dans un ensemble de labels
+ * Param    : labels (tableau de labels), n_samples (nombre d'échantillons)
+ * Retour   : double (probabilité entre 0 et 1)
+ */
 static double class_probability(int* labels, int n_samples) {
     if (n_samples == 0) return 0.0;
     
@@ -80,6 +131,16 @@ static double class_probability(int* labels, int n_samples) {
     return (double)count_1 / n_samples;
 }
 
+/* **************************************************
+ * # --- CONSTRUCTION DE L'ARBRE --- #
+ * ************************************************** */
+
+/**
+ * Fonction : create_leaf_node
+ * Rôle     : Crée un nœud feuille avec la classe majoritaire et sa probabilité
+ * Param    : labels (tableau de labels), n_samples (nombre d'échantillons), criterion (critère d'impureté)
+ * Retour   : DecisionNode* (nœud feuille créé)
+ */
 static DecisionNode* create_leaf_node(int* labels, int n_samples, SplitCriterion criterion) {
     DecisionNode* node = (DecisionNode*)safe_malloc(sizeof(DecisionNode));
     node->is_leaf = 1;
@@ -94,6 +155,12 @@ static DecisionNode* create_leaf_node(int* labels, int n_samples, SplitCriterion
     return node;
 }
 
+/**
+ * Fonction : create_internal_node
+ * Rôle     : Crée un nœud interne avec un critère de division
+ * Param    : feature_idx (index de la feature), threshold (seuil de division), n_samples (nombre d'échantillons), impurity (impureté)
+ * Retour   : DecisionNode* (nœud interne créé)
+ */
 static DecisionNode* create_internal_node(int feature_idx, double threshold, int n_samples, double impurity) {
     DecisionNode* node = (DecisionNode*)safe_malloc(sizeof(DecisionNode));
     node->is_leaf = 0;
@@ -108,6 +175,12 @@ static DecisionNode* create_internal_node(int feature_idx, double threshold, int
     return node;
 }
 
+/**
+ * Fonction : find_best_split
+ * Rôle     : Trouve la meilleure division en testant toutes les features et tous les seuils possibles
+ * Param    : data (matrice de données), labels (tableau de labels), n_samples (nombre d'échantillons), n_features (nombre de features), criterion (critère de division)
+ * Retour   : BestSplit (meilleure division trouvée avec gain maximal)
+ */
 static BestSplit find_best_split(double** data, int* labels, int n_samples, int n_features, SplitCriterion criterion) {
     BestSplit best = {-1, 0.0, -1.0};
     double parent_impurity = compute_impurity(labels, n_samples, criterion);
@@ -178,6 +251,12 @@ static BestSplit find_best_split(double** data, int* labels, int n_samples, int 
     return best;
 }
 
+/**
+ * Fonction : build_tree
+ * Rôle     : Construit récursivement l'arbre de décision en appliquant les critères d'arrêt
+ * Param    : data (matrice de données), labels (tableau de labels), n_samples (nombre d'échantillons), n_features (nombre de features), depth (profondeur actuelle), tree (arbre contenant les hyperparamètres)
+ * Retour   : DecisionNode* (racine de l'arbre construit)
+ */
 static DecisionNode* build_tree(double** data, int* labels, int n_samples, int n_features, 
                                 int depth, DecisionTree* tree) {
     double impurity = compute_impurity(labels, n_samples, tree->criterion);
@@ -233,6 +312,16 @@ static DecisionNode* build_tree(double** data, int* labels, int n_samples, int n
     return node;
 }
 
+/* **************************************************
+ * # --- PRÉDICTION --- #
+ * ************************************************** */
+
+/**
+ * Fonction : predict_single
+ * Rôle     : Prédit la classe d'un échantillon unique en parcourant l'arbre récursivement
+ * Param    : node (nœud racine de l'arbre), sample (vecteur de features de l'échantillon)
+ * Retour   : int (classe prédite, 0 ou 1)
+ */
 static int predict_single(DecisionNode* node, double* sample) {
     if (node->is_leaf) {
         return node->predicted_class;
@@ -245,6 +334,12 @@ static int predict_single(DecisionNode* node, double* sample) {
     }
 }
 
+/**
+ * Fonction : predict_proba_single
+ * Rôle     : Calcule la probabilité de classe positive pour un échantillon unique
+ * Param    : node (nœud racine de l'arbre), sample (vecteur de features de l'échantillon)
+ * Retour   : double (probabilité entre 0 et 1)
+ */
 static double predict_proba_single(DecisionNode* node, double* sample) {
     if (node->is_leaf) {
         return node->class_probability;
@@ -257,6 +352,12 @@ static double predict_proba_single(DecisionNode* node, double* sample) {
     }
 }
 
+/**
+ * Fonction : get_depth_recursive
+ * Rôle     : Calcule récursivement la profondeur maximale de l'arbre
+ * Param    : node (nœud racine de l'arbre)
+ * Retour   : int (profondeur maximale)
+ */
 static int get_depth_recursive(DecisionNode* node) {
     if (node == NULL || node->is_leaf) {
         return 0;
@@ -268,11 +369,27 @@ static int get_depth_recursive(DecisionNode* node) {
     return 1 + (left_depth > right_depth ? left_depth : right_depth);
 }
 
+/**
+ * Fonction : count_nodes_recursive
+ * Rôle     : Compte récursivement le nombre total de nœuds dans l'arbre
+ * Param    : node (nœud racine de l'arbre)
+ * Retour   : int (nombre total de nœuds)
+ */
 static int count_nodes_recursive(DecisionNode* node) {
     if (node == NULL) return 0;
     return 1 + count_nodes_recursive(node->left) + count_nodes_recursive(node->right);
 }
 
+/* **************************************************
+ * # --- AFFICHAGE ET SAUVEGARDE --- #
+ * ************************************************** */
+
+/**
+ * Fonction : print_tree_recursive
+ * Rôle     : Affiche récursivement la structure de l'arbre avec indentation
+ * Param    : node (nœud à afficher), depth (profondeur actuelle pour l'indentation)
+ * Retour   : void
+ */
 static void print_tree_recursive(DecisionNode* node, int depth) {
     if (node == NULL) return;
     
@@ -289,6 +406,12 @@ static void print_tree_recursive(DecisionNode* node, int depth) {
     }
 }
 
+/**
+ * Fonction : save_tree_recursive
+ * Rôle     : Sauvegarde récursivement la structure de l'arbre dans un fichier
+ * Param    : file (fichier de destination), node (nœud à sauvegarder)
+ * Retour   : void
+ */
 static void save_tree_recursive(FILE* file, DecisionNode* node) {
     if (node == NULL) {
         fprintf(file, "NULL\n");
@@ -306,6 +429,12 @@ static void save_tree_recursive(FILE* file, DecisionNode* node) {
     }
 }
 
+/**
+ * Fonction : load_tree_recursive
+ * Rôle     : Charge récursivement la structure de l'arbre depuis un fichier
+ * Param    : file (fichier source)
+ * Retour   : DecisionNode* (nœud racine chargé, NULL en cas d'erreur)
+ */
 static DecisionNode* load_tree_recursive(FILE* file) {
     char type[10];
     if (fscanf(file, "%s", type) != 1) return NULL;
@@ -337,6 +466,12 @@ static DecisionNode* load_tree_recursive(FILE* file) {
     return node;
 }
 
+/**
+ * Fonction : free_tree_recursive
+ * Rôle     : Libère récursivement toute la mémoire allouée pour l'arbre
+ * Param    : node (nœud racine à libérer)
+ * Retour   : void
+ */
 static void free_tree_recursive(DecisionNode* node) {
     if (node == NULL) return;
     
@@ -345,6 +480,16 @@ static void free_tree_recursive(DecisionNode* node) {
     safe_free(node);
 }
 
+/* **************************************************
+ * # --- FONCTIONS PUBLIQUES --- #
+ * ************************************************** */
+
+/**
+ * Fonction : create_decision_tree
+ * Rôle     : Crée et initialise un arbre de décision avec les hyperparamètres spécifiés
+ * Param    : max_depth (profondeur maximale), min_samples_split (minimum d'échantillons pour diviser), min_samples_leaf (minimum d'échantillons par feuille), criterion (critère de division)
+ * Retour   : DecisionTree* (arbre initialisé)
+ */
 DecisionTree* create_decision_tree(int max_depth, int min_samples_split, int min_samples_leaf, SplitCriterion criterion) {
     DecisionTree* tree = (DecisionTree*)safe_malloc(sizeof(DecisionTree));
     tree->root = NULL;
@@ -356,15 +501,33 @@ DecisionTree* create_decision_tree(int max_depth, int min_samples_split, int min
     return tree;
 }
 
+/**
+ * Fonction : train_decision_tree
+ * Rôle     : Entraîne l'arbre de décision en construisant récursivement la structure optimale
+ * Param    : tree (arbre à entraîner), dataset (dataset d'entraînement)
+ * Retour   : void
+ */
 void train_decision_tree(DecisionTree* tree, Dataset* dataset) {
     tree->n_features = dataset->cols;
     tree->root = build_tree(dataset->data, dataset->labels, dataset->rows, dataset->cols, 0, tree);
 }
 
+/**
+ * Fonction : predict_tree_single
+ * Rôle     : Prédit la classe d'un échantillon unique
+ * Param    : tree (arbre entraîné), sample (vecteur de features de l'échantillon)
+ * Retour   : int (classe prédite, 0 ou 1)
+ */
 int predict_tree_single(DecisionTree* tree, double* sample) {
     return predict_single(tree->root, sample);
 }
 
+/**
+ * Fonction : predict_tree_dataset
+ * Rôle     : Prédit les classes pour tous les échantillons d'un dataset
+ * Param    : tree (arbre entraîné), dataset (dataset à prédire)
+ * Retour   : int* (tableau de prédictions binaires)
+ */
 int* predict_tree_dataset(DecisionTree* tree, Dataset* dataset) {
     int* predictions = (int*)safe_malloc(dataset->rows * sizeof(int));
     
@@ -375,6 +538,12 @@ int* predict_tree_dataset(DecisionTree* tree, Dataset* dataset) {
     return predictions;
 }
 
+/**
+ * Fonction : get_tree_probabilities
+ * Rôle     : Calcule les probabilités de classe positive pour tous les échantillons d'un dataset
+ * Param    : tree (arbre entraîné), dataset (dataset à prédire)
+ * Retour   : double* (tableau de probabilités entre 0 et 1)
+ */
 double* get_tree_probabilities(DecisionTree* tree, Dataset* dataset) {
     double* probabilities = (double*)safe_malloc(dataset->rows * sizeof(double));
     
@@ -385,14 +554,32 @@ double* get_tree_probabilities(DecisionTree* tree, Dataset* dataset) {
     return probabilities;
 }
 
+/**
+ * Fonction : get_tree_depth
+ * Rôle     : Retourne la profondeur maximale de l'arbre
+ * Param    : tree (arbre à analyser)
+ * Retour   : int (profondeur maximale)
+ */
 int get_tree_depth(DecisionTree* tree) {
     return get_depth_recursive(tree->root);
 }
 
+/**
+ * Fonction : count_tree_nodes
+ * Rôle     : Retourne le nombre total de nœuds dans l'arbre
+ * Param    : tree (arbre à analyser)
+ * Retour   : int (nombre total de nœuds)
+ */
 int count_tree_nodes(DecisionTree* tree) {
     return count_nodes_recursive(tree->root);
 }
 
+/**
+ * Fonction : print_tree
+ * Rôle     : Affiche les informations et la structure complète de l'arbre
+ * Param    : tree (arbre à afficher)
+ * Retour   : void
+ */
 void print_tree(DecisionTree* tree) {
     printf("\n=== Decision Tree Structure ===\n");
     printf("Max Depth: %d\n", tree->max_depth);
@@ -405,6 +592,12 @@ void print_tree(DecisionTree* tree) {
     print_tree_recursive(tree->root, 0);
 }
 
+/**
+ * Fonction : save_decision_tree
+ * Rôle     : Sauvegarde un arbre de décision dans un fichier texte
+ * Param    : filename (nom du fichier de destination), tree (arbre à sauvegarder)
+ * Retour   : void
+ */
 void save_decision_tree(const char* filename, DecisionTree* tree) {
     FILE* file = fopen(filename, "w");
     if (!file) {
@@ -421,6 +614,12 @@ void save_decision_tree(const char* filename, DecisionTree* tree) {
     fclose(file);
 }
 
+/**
+ * Fonction : load_decision_tree
+ * Rôle     : Charge un arbre de décision depuis un fichier texte
+ * Param    : filename (nom du fichier source)
+ * Retour   : DecisionTree* (arbre chargé, NULL en cas d'erreur)
+ */
 DecisionTree* load_decision_tree(const char* filename) {
     FILE* file = fopen(filename, "r");
     if (!file) {
@@ -442,6 +641,12 @@ DecisionTree* load_decision_tree(const char* filename) {
     return tree;
 }
 
+/**
+ * Fonction : free_decision_tree
+ * Rôle     : Libère complètement la mémoire allouée pour un arbre de décision
+ * Param    : tree (arbre à libérer)
+ * Retour   : void
+ */
 void free_decision_tree(DecisionTree* tree) {
     if (tree == NULL) return;
     free_tree_recursive(tree->root);

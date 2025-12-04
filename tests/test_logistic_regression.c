@@ -1,6 +1,20 @@
-/**
- * Tests unitaires pour la régression logistique
- */
+/*****************************************************************************************************
+
+Nom : tests/test_logistic_regression.c
+
+Rôle : Tests unitaires pour le module logistic_regression
+
+Auteur : Maxime BRONNY
+
+Version : V1
+
+Licence : Réalisé dans le cadre du cours Technique d'intelligence artificiel M1 INFORMATIQUE BIG-DATA
+
+Usage : Pour compiler : make
+        Pour executer : ./test_logistic_regression
+
+******************************************************************************************************/
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>

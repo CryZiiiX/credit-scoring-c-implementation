@@ -1,3 +1,20 @@
+/*****************************************************************************************************
+
+Nom : src/utils/utils.h
+
+Rôle : Déclarations de fonctions, structures et constantes pour le module d'utilitaires
+
+Auteur : Maxime BRONNY
+
+Version : V1
+
+Licence : Réalisé dans le cadre du cours Technique d'intelligence artificiel M1 INFORMATIQUE BIG-DATA
+
+Usage : Pour compiler : make
+        Pour executer : ./build/credit_risk_predictor
+
+******************************************************************************************************/
+
 #ifndef UTILS_H
 #define UTILS_H
 

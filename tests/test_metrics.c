@@ -1,6 +1,20 @@
-/**
- * Tests unitaires pour les métriques d'évaluation
- */
+/*****************************************************************************************************
+
+Nom : tests/test_metrics.c
+
+Rôle : Tests unitaires pour le module metrics
+
+Auteur : Maxime BRONNY
+
+Version : V1
+
+Licence : Réalisé dans le cadre du cours Technique d'intelligence artificiel M1 INFORMATIQUE BIG-DATA
+
+Usage : Pour compiler : make
+        Pour executer : ./test_metrics
+
+******************************************************************************************************/
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>

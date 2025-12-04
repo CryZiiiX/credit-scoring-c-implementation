@@ -1,6 +1,20 @@
-/**
- * Tests unitaires pour le chargement de données
- */
+/*****************************************************************************************************
+
+Nom : tests/test_data_loader.c
+
+Rôle : Tests unitaires pour le module data_loader
+
+Auteur : Maxime BRONNY
+
+Version : V1
+
+Licence : Réalisé dans le cadre du cours Technique d'intelligence artificiel M1 INFORMATIQUE BIG-DATA
+
+Usage : Pour compiler : make
+        Pour executer : ./test_data_loader
+
+******************************************************************************************************/
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>

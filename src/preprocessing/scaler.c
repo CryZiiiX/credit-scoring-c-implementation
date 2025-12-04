@@ -1,9 +1,36 @@
+/*****************************************************************************************************
+
+Nom : src/preprocessing/scaler.c
+
+Rôle : Implémentation StandardScaler pour normalisation des features numériques
+
+Auteur : Maxime BRONNY
+
+Version : V1
+
+Licence : Réalisé dans le cadre du cours Technique d'intelligence artificiel M1 INFORMATIQUE BIG-DATA
+
+Usage : Pour compiler : make
+        Pour executer : N/A
+
+******************************************************************************************************/
+
 #include "scaler.h"
 #include "../utils/memory_manager.h"
 #include "../utils/utils.h"
 #include <math.h>
 #include <stdio.h>
 
+/* **************************************************
+ * # --- NORMALISATION STANDARDSCALER --- #
+ * ************************************************** */
+
+/**
+ * Fonction : fit_scaler
+ * Rôle     : Calcule la moyenne et l'écart-type de chaque feature pour la normalisation
+ * Param    : dataset (dataset d'entraînement pour calculer les statistiques)
+ * Retour   : Scaler* (scaler ajusté contenant moyenne et écart-type)
+ */
 Scaler* fit_scaler(Dataset* dataset) {
     Scaler* scaler = (Scaler*)safe_malloc(sizeof(Scaler));
     scaler->n_features = dataset->cols;
@@ -33,6 +60,12 @@ Scaler* fit_scaler(Dataset* dataset) {
     return scaler;
 }
 
+/**
+ * Fonction : transform_dataset
+ * Rôle     : Applique la normalisation StandardScaler (x' = (x - mean) / std) à un dataset
+ * Param    : dataset (dataset à normaliser), scaler (scaler préalablement ajusté)
+ * Retour   : void
+ */
 void transform_dataset(Dataset* dataset, Scaler* scaler) {
     for (int i = 0; i < dataset->rows; i++) {
         for (int j = 0; j < dataset->cols; j++) {
@@ -41,6 +74,12 @@ void transform_dataset(Dataset* dataset, Scaler* scaler) {
     }
 }
 
+/**
+ * Fonction : save_scaler
+ * Rôle     : Sauvegarde les paramètres d'un scaler dans un fichier texte
+ * Param    : filename (nom du fichier de destination), scaler (scaler à sauvegarder)
+ * Retour   : void
+ */
 void save_scaler(const char* filename, Scaler* scaler) {
     FILE* file = fopen(filename, "w");
     if (!file) {
@@ -56,6 +95,12 @@ void save_scaler(const char* filename, Scaler* scaler) {
     fclose(file);
 }
 
+/**
+ * Fonction : load_scaler
+ * Rôle     : Charge les paramètres d'un scaler depuis un fichier texte
+ * Param    : filename (nom du fichier source)
+ * Retour   : Scaler* (scaler chargé, NULL en cas d'erreur)
+ */
 Scaler* load_scaler(const char* filename) {
     FILE* file = fopen(filename, "r");
     if (!file) {
@@ -85,6 +130,12 @@ Scaler* load_scaler(const char* filename) {
     return scaler;
 }
 
+/**
+ * Fonction : free_scaler
+ * Rôle     : Libère complètement la mémoire allouée pour un scaler
+ * Param    : scaler (scaler à libérer)
+ * Retour   : void
+ */
 void free_scaler(Scaler* scaler) {
     if (scaler) {
         free_vector(scaler->mean);

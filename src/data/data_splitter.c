@@ -1,9 +1,36 @@
+/*****************************************************************************************************
+
+Nom : src/data/data_splitter.c
+
+Rôle : Division du dataset en ensembles d'entraînement et de test avec mélange aléatoire
+
+Auteur : Maxime BRONNY
+
+Version : V1
+
+Licence : Réalisé dans le cadre du cours Technique d'intelligence artificiel M1 INFORMATIQUE BIG-DATA
+
+Usage : Pour compiler : make
+        Pour executer : N/A
+
+******************************************************************************************************/
+
 #include "data_splitter.h"
 #include "../utils/memory_manager.h"
 #include "../utils/utils.h"
 #include <time.h>
 #include <stdlib.h>
 
+/* **************************************************
+ * # --- DIVISION TRAIN/TEST --- #
+ * ************************************************** */
+
+/**
+ * Fonction : shuffle_dataset
+ * Rôle     : Mélange aléatoirement les lignes d'un dataset en place
+ * Param    : dataset (dataset à mélanger)
+ * Retour   : void
+ */
 void shuffle_dataset(Dataset* dataset) {
     srand(time(NULL));
     
@@ -22,6 +49,12 @@ void shuffle_dataset(Dataset* dataset) {
     }
 }
 
+/**
+ * Fonction : split_dataset
+ * Rôle     : Divise un dataset en ensembles d'entraînement et de test selon un ratio donné
+ * Param    : dataset (dataset à diviser), train_ratio (proportion pour l'entraînement, entre 0 et 1)
+ * Retour   : SplitData* (structure contenant les datasets train et test)
+ */
 SplitData* split_dataset(Dataset* dataset, double train_ratio) {
     SplitData* split = (SplitData*)safe_malloc(sizeof(SplitData));
     
@@ -61,6 +94,12 @@ SplitData* split_dataset(Dataset* dataset, double train_ratio) {
     return split;
 }
 
+/**
+ * Fonction : free_split_data
+ * Rôle     : Libère complètement la mémoire allouée pour une structure SplitData
+ * Param    : split (structure SplitData à libérer)
+ * Retour   : void
+ */
 void free_split_data(SplitData* split) {
     if (split) {
         free_dataset(split->train);

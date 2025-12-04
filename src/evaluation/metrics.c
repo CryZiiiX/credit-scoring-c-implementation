@@ -1,8 +1,35 @@
+/*****************************************************************************************************
+
+Nom : src/evaluation/metrics.c
+
+Rôle : Calcul des métriques (accuracy, precision, recall, F1-score, AUC-ROC)
+
+Auteur : Maxime BRONNY
+
+Version : V1
+
+Licence : Réalisé dans le cadre du cours Technique d'intelligence artificiel M1 INFORMATIQUE BIG-DATA
+
+Usage : Pour compiler : make
+        Pour executer : N/A
+
+******************************************************************************************************/
+
 #include "metrics.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
+/* **************************************************
+ * # --- MÉTRIQUES DE CLASSIFICATION --- #
+ * ************************************************** */
+
+/**
+ * Fonction : compute_accuracy
+ * Rôle     : Calcule le taux de précision (proportion de prédictions correctes)
+ * Param    : y_true (labels réels), y_pred (labels prédits), n_samples (nombre d'échantillons)
+ * Retour   : double (accuracy entre 0 et 1)
+ */
 double compute_accuracy(int* y_true, int* y_pred, int n_samples) {
     int correct = 0;
     for (int i = 0; i < n_samples; i++) {
@@ -13,6 +40,12 @@ double compute_accuracy(int* y_true, int* y_pred, int n_samples) {
     return (double)correct / n_samples;
 }
 
+/**
+ * Fonction : compute_precision
+ * Rôle     : Calcule la précision (proportion de vrais positifs parmi les prédictions positives)
+ * Param    : y_true (labels réels), y_pred (labels prédits), n_samples (nombre d'échantillons)
+ * Retour   : double (precision entre 0 et 1)
+ */
 double compute_precision(int* y_true, int* y_pred, int n_samples) {
     int tp = 0, fp = 0;
     for (int i = 0; i < n_samples; i++) {
@@ -24,6 +57,12 @@ double compute_precision(int* y_true, int* y_pred, int n_samples) {
     return (tp + fp) > 0 ? (double)tp / (tp + fp) : 0.0;
 }
 
+/**
+ * Fonction : compute_recall
+ * Rôle     : Calcule le rappel (proportion de vrais positifs détectés parmi les positifs réels)
+ * Param    : y_true (labels réels), y_pred (labels prédits), n_samples (nombre d'échantillons)
+ * Retour   : double (recall entre 0 et 1)
+ */
 double compute_recall(int* y_true, int* y_pred, int n_samples) {
     int tp = 0, fn = 0;
     for (int i = 0; i < n_samples; i++) {
@@ -35,6 +74,12 @@ double compute_recall(int* y_true, int* y_pred, int n_samples) {
     return (tp + fn) > 0 ? (double)tp / (tp + fn) : 0.0;
 }
 
+/**
+ * Fonction : compute_f1_score
+ * Rôle     : Calcule le score F1 (moyenne harmonique de la précision et du rappel)
+ * Param    : y_true (labels réels), y_pred (labels prédits), n_samples (nombre d'échantillons)
+ * Retour   : double (F1-score entre 0 et 1)
+ */
 double compute_f1_score(int* y_true, int* y_pred, int n_samples) {
     double precision = compute_precision(y_true, y_pred, n_samples);
     double recall = compute_recall(y_true, y_pred, n_samples);
@@ -43,6 +88,12 @@ double compute_f1_score(int* y_true, int* y_pred, int n_samples) {
     return 2 * (precision * recall) / (precision + recall);
 }
 
+/**
+ * Fonction : print_metrics
+ * Rôle     : Affiche toutes les métriques de classification sur la sortie standard
+ * Param    : y_true (labels réels), y_pred (labels prédits), n_samples (nombre d'échantillons)
+ * Retour   : void
+ */
 void print_metrics(int* y_true, int* y_pred, int n_samples) {
     printf("Accuracy:  %.4f\n", compute_accuracy(y_true, y_pred, n_samples));
     printf("Precision: %.4f\n", compute_precision(y_true, y_pred, n_samples));
@@ -50,6 +101,12 @@ void print_metrics(int* y_true, int* y_pred, int n_samples) {
     printf("F1-Score:  %.4f\n", compute_f1_score(y_true, y_pred, n_samples));
 }
 
+/**
+ * Fonction : save_metrics
+ * Rôle     : Sauvegarde toutes les métriques de classification dans un fichier texte
+ * Param    : filename (nom du fichier de destination), y_true (labels réels), y_pred (labels prédits), n_samples (nombre d'échantillons)
+ * Retour   : void
+ */
 void save_metrics(const char* filename, int* y_true, int* y_pred, int n_samples) {
     FILE* file = fopen(filename, "w");
     if (!file) {
@@ -65,6 +122,12 @@ void save_metrics(const char* filename, int* y_true, int* y_pred, int n_samples)
     fclose(file);
 }
 
+/**
+ * Fonction : save_metrics_with_auc
+ * Rôle     : Sauvegarde toutes les métriques de classification incluant l'AUC-ROC dans un fichier texte
+ * Param    : filename (nom du fichier de destination), y_true (labels réels), y_pred (labels prédits), n_samples (nombre d'échantillons), auc_roc (valeur AUC-ROC)
+ * Retour   : void
+ */
 void save_metrics_with_auc(const char* filename, int* y_true, int* y_pred, int n_samples, double auc_roc) {
     FILE* file = fopen(filename, "w");
     if (!file) {
@@ -81,17 +144,20 @@ void save_metrics_with_auc(const char* filename, int* y_true, int* y_pred, int n
     fclose(file);
 }
 
-/*
- * Structure pour associer probabilite et label vrai
- */
+/* **************************************************
+ * # --- CALCUL AUC-ROC --- #
+ * ************************************************** */
+
 typedef struct {
     double probability;
     int true_label;
 } PredictionPair;
 
-/*
- * Fonction de comparaison pour qsort
- * Tri par probabilite decroissante
+/**
+ * Fonction : compare_predictions_desc
+ * Rôle     : Fonction de comparaison pour trier les prédictions par probabilité décroissante
+ * Param    : a (pointeur vers première paire), b (pointeur vers deuxième paire)
+ * Retour   : int (négatif si a > b, positif si a < b, 0 si égal)
  */
 static int compare_predictions_desc(const void* a, const void* b) {
     PredictionPair* pair_a = (PredictionPair*)a;
@@ -102,20 +168,11 @@ static int compare_predictions_desc(const void* a, const void* b) {
     return 0;
 }
 
-/*
- * Calcule l'AUC-ROC (Area Under the ROC Curve)
- * 
- * L'AUC-ROC mesure la capacite du modele a discriminer les classes.
- * Une valeur de 1.0 indique une discrimination parfaite.
- * Une valeur de 0.5 indique une performance aleatoire.
- * 
- * Algorithme:
- * 1. Trier les predictions par probabilite decroissante
- * 2. Calculer TPR et FPR pour chaque seuil
- * 3. Calculer l'aire sous la courbe par methode des trapezes
- * 
- * Complexite temporelle: O(n log n) (tri)
- * Complexite spatiale: O(n)
+/**
+ * Fonction : compute_auc_roc
+ * Rôle     : Calcule l'aire sous la courbe ROC en triant les prédictions et calculant TPR/FPR pour chaque seuil
+ * Param    : probabilities (probabilités de classe positive), y_true (labels réels), n_samples (nombre d'échantillons)
+ * Retour   : double (AUC-ROC entre 0 et 1, 0.5 = performance aléatoire)
  */
 double compute_auc_roc(double* probabilities, int* y_true, int n_samples) {
     /* Etape 1: Creer et trier les paires (probabilite, label) */
