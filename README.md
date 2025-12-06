@@ -1,4 +1,5 @@
 # Prédiction du Risque de Crédit Bancaire en C
+![Présentation du projet](./docs/rapport/PagedeprésentationderapportCANVA.png)
 
 Projet académique M1 Informatique - Techniques d'Apprentissage Artificiel
 
